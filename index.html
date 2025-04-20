@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <img src="ppg-removebg-preview.png" alt="Powerpuff Header" class="header-img" />
+  <title>Powerpuff Slot Machine 🎰</title>
+  <style>
+    body {
+      background: linear-gradient(135deg, #ffe6f0, #e0f7fa);
+      font-family: 'Poppins', sans-serif;
+      margin: 0;
+      padding: 40px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      flex-direction: column;
+    }
+
+    .header-img {
+  width: 100%;
+  max-width: 500px;
+  border-radius: 20px;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+  margin-bottom: 20px;
+}
+    h1 {
+      font-size: 2.5rem;
+      color: #ff69b4;
+      margin-bottom: 30px;
+    }
+
+    .machine {
+      background: #fff;
+      padding: 30px;
+      border-radius: 20px;
+      box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+      width: 360px;
+      text-align: center;
+    }
+
+    .slots {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      margin-bottom: 25px;
+    }
+
+    .slot {
+      width: 80px;
+      height: 80px;
+      background: #fff0f5;
+      border-radius: 15px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+    }
+
+    .slot.spin {
+      animation: bounce 0.3s infinite alternate;
+    }
+
+    @keyframes bounce {
+      from { transform: translateY(0); }
+      to   { transform: translateY(-5px); }
+    }
+
+    .slot img {
+      width: 60px;
+      height: auto;
+      border-radius: 10px;
+    }
+
+    button {
+      background: #ff69b4;
+      color: white;
+      border: none;
+      padding: 12px 30px;
+      border-radius: 10px;
+      font-size: 1.1rem;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    button:hover {
+      background: #ff1493;
+    }
+
+    button:disabled {
+      background: #ffcce6;
+      cursor: not-allowed;
+    }
+
+    #result {
+      margin-top: 20px;
+      font-size: 1.2rem;
+      font-weight: 600;
+    }
+
+    .sparkle {
+      position: absolute;
+      top: -10px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 1.5rem;
+      animation: sparkleFade 1.5s ease-out forwards;
+      pointer-events: none;
+    }
+
+    @keyframes sparkleFade {
+      0% { opacity: 1; transform: translate(-50%, -10px) scale(1); }
+      100% { opacity: 0; transform: translate(-50%, -30px) scale(1.5); }
+    }
+
+    @media (max-width: 600px) {
+      body {
+        padding: 20px;
+      }
+
+      .machine {
+        width: 100%;
+        padding: 20px;
+      }
+
+      .slot {
+        width: 65px;
+        height: 65px;
+      }
+
+      .slot img {
+        width: 50px;
+      }
+
+      h1 {
+        font-size: 2rem;
+      }
+
+      button {
+        width: 100%;
+        font-size: 1rem;
+        padding: 10px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="machine">
+    <div class="slots">
+      <div class="slot" id="slot1"></div>
+      <div class="slot" id="slot2"></div>
+      <div class="slot" id="slot3"></div>
+    </div>
+    <button id="spinBtn">Spin 🎀</button>
+    <div id="result"></div>
+  </div>
+
+  <script>
+    const symbols = [
+      '<img src="images/blossom.png" alt="Blossom">',
+      '<img src="images/bubbles.png" alt="Bubbles">',
+      '<img src="images/buttercup.png" alt="Buttercup">',
+      '<img src="images/mojojo.png" alt="Mojo Jojo">',
+      '<img src="images/profess.png" alt="Professor">'
+    ];
+
+    const slotEls = [
+      document.getElementById('slot1'),
+      document.getElementById('slot2'),
+      document.getElementById('slot3')
+    ];
+
+    const result = document.getElementById('result');
+    const spinBtn = document.getElementById('spinBtn');
+
+    let isSpinning = false;
+    let coins = 10000;
+    const costPerSpin = 500;
+    const reward = 2000;
+
+    updateResult(`💰 Coins: ${coins}`);
+
+    function getRandomSymbol() {
+      return symbols[Math.floor(Math.random() * symbols.length)];
+    }
+
+    function updateResult(msg, color = '#d63384') {
+      result.innerHTML = msg;
+      result.style.color = color;
+    }
+
+    function updateButton() {
+      if (coins < costPerSpin) {
+        spinBtn.disabled = true;
+        spinBtn.textContent = '💔 Not enough coins!';
+      } else {
+        spinBtn.disabled = false;
+        spinBtn.textContent = 'Spin 🎀';
+      }
+    }
+
+    function showSparkles() {
+      const sparkle = document.createElement('div');
+      sparkle.className = 'sparkle';
+      sparkle.textContent = '✨';
+      result.appendChild(sparkle);
+      setTimeout(() => sparkle.remove(), 1500);
+    }
+
+    function spinSlot(slot, delay) {
+      return new Promise((resolve) => {
+        let spins = 20 + Math.floor(Math.random() * 10);
+        let count = 0;
+        slot.classList.add('spin');
+
+        const interval = setInterval(() => {
+          const symbol = getRandomSymbol();
+          slot.innerHTML = symbol;
+          count++;
+          if (count >= spins) {
+            clearInterval(interval);
+            slot.classList.remove('spin');
+            resolve(slot.innerHTML);
+          }
+        }, delay);
+      });
+    }
+
+    async function spinAllSlots() {
+      if (isSpinning || coins < costPerSpin) return;
+
+      isSpinning = true;
+      coins -= costPerSpin;
+      updateResult(`Spinning... 💸`);
+      updateButton();
+
+      const results = await Promise.all([
+        spinSlot(slotEls[0], 80),
+        spinSlot(slotEls[1], 100),
+        spinSlot(slotEls[2], 120)
+      ]);
+
+      const [s1, s2, s3] = results;
+
+      if (s1 === s2 && s2 === s3) {
+        coins += reward;
+        updateResult(`💖 JACKPOT! You won ${reward} coins! 💰<br>Balance: ${coins}`, '#e91e63');
+        showSparkles();
+      } else {
+        updateResult(`😢 No match! You lost ${costPerSpin} coins.<br>Balance: ${coins}`, '#555');
+      }
+
+      updateButton();
+      isSpinning = false;
+    }
+
+    spinBtn.addEventListener('click', spinAllSlots);
+    updateButton();
+  </script>
+</body>
+</html>
